@@ -47,31 +47,8 @@
   var iv = setInterval(tick, 1000);
 })();
 
-// ── "Taqvimga qo'shish" — .ics fayl yuklab beradi (barcha kalendarlar) ──
-(function () {
-  var btn = document.getElementById('addcal');
-  if (!btn) return;
-  var ics = [
-    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Akmal Farm//Taklifnoma//UZ', 'CALSCALE:GREGORIAN',
-    'BEGIN:VEVENT', 'UID:akmal-ochilish-2026@akmalfarm.uz', 'DTSTAMP:20260701T000000Z',
-    'DTSTART:20260702T060000Z', 'DTEND:20260702T080000Z',
-    'SUMMARY:Akmal Farm — yangi filial ochilishi',
-    'DESCRIPTION:Yangi dorixona ochilish marosimi. Sizni kutamiz!',
-    'LOCATION:Andijon vil.\\, Qoʼrgʼontepa t.\\, Yuksalish MFY\\, Mustaqillik koʼchasi 972',
-    'END:VEVENT', 'END:VCALENDAR'
-  ].join('\r\n');
-  btn.addEventListener('click', function () {
-    var blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url; a.download = 'akmal-farm-ochilish.ics';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
-    btn.classList.add('done');
-    var i = btn.querySelector('.ct i');
-    if (i) i.textContent = 'Yuklab olindi ✓ · Готово';
-  });
-})();
+// "Taqvimga qo'shish" tugmasi endi to'g'ridan-to'g'ri /akmal-farm-ochilish.ics
+// faylига ссылка (<a href>) — mobil (iOS) da ishonchli ishlaydi, JS shart emas.
 
 // ── Kapsula parallaksi (nozik, hero reveal tugagach) ──────────────────
 (function () {
