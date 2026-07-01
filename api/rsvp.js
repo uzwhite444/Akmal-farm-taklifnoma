@@ -86,8 +86,10 @@ module.exports = async function handler(req, res) {
 
     // Telegram bildirishnomasi
     const BOT = process.env.TELEGRAM_BOT_TOKEN;
-    const CHAT = process.env.TELEGRAM_ADMIN_CHAT_ID;
-    if (BOT && CHAT) {
+    // Bir nechta qabul qiluvchi: TELEGRAM_ADMIN_CHAT_ID = "id1,id2,id3"
+    const CHATS = String(process.env.TELEGRAM_ADMIN_CHAT_ID || "")
+      .split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+    if (BOT && CHATS.length) {
       const st = attending ? "✅ KELADI / ПРИДЁТ" : "❌ KELMAYDI / НЕ ПРИДЁТ";
       const text = [
         "🎉 <b>Yangi javob — Akmal Farm ochilishi</b>", "", st,
@@ -95,16 +97,17 @@ module.exports = async function handler(req, res) {
         attending ? `👥 Mehmonlar / Гостей: <b>${guests}</b>` : "",
         message ? `💬 ${esc(message)}` : "",
       ].filter(Boolean).join("\n");
-      try {
-        const tg = await fetch(`https://api.telegram.org/bot${BOT}/sendMessage`, {
+      await Promise.all(CHATS.map(function (chat_id) {
+        return fetch(`https://api.telegram.org/bot${BOT}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: CHAT, text, parse_mode: "HTML", disable_web_page_preview: true }),
-        });
-        if (!tg.ok) console.error("telegram failed:", await tg.text());
-      } catch (e) { console.error("telegram error:", e); }
+          body: JSON.stringify({ chat_id: chat_id, text: text, parse_mode: "HTML", disable_web_page_preview: true }),
+        })
+          .then(function (tg) { if (!tg.ok) return tg.text().then(function (t) { console.error("telegram failed for " + chat_id + ":", t); }); })
+          .catch(function (e) { console.error("telegram error for " + chat_id + ":", e); });
+      }));
     } else {
-      console.warn("TELEGRAM_BOT_TOKEN sozlanmagan");
+      console.warn("TELEGRAM_BOT_TOKEN / TELEGRAM_ADMIN_CHAT_ID sozlanmagan");
     }
 
     return res.status(200).json({ ok: true, id });
