@@ -21,6 +21,79 @@
   document.querySelectorAll('.reveal-up, .ecg').forEach(function (el) { io.observe(el); });
 })();
 
+// ── Countdown: 2-iyul 2026, 11:00 (Oʻzbekiston, UTC+5) ────────────────
+(function () {
+  var cd = document.getElementById('cd');
+  if (!cd) return;
+  var target = new Date('2026-07-02T11:00:00+05:00').getTime();
+  var d = cd.querySelector('[data-cd=d]'), h = cd.querySelector('[data-cd=h]'),
+      m = cd.querySelector('[data-cd=m]'), s = cd.querySelector('[data-cd=s]');
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function tick() {
+    var diff = target - Date.now();
+    if (diff <= 0) {
+      var g = cd.querySelector('.cd-grid');
+      if (g) g.innerHTML = '<div class="cd-done">Marosim boshlandi! · Мероприятие началось!</div>';
+      clearInterval(iv);
+      return;
+    }
+    var sec = Math.floor(diff / 1000);
+    d.textContent = Math.floor(sec / 86400);
+    h.textContent = pad(Math.floor((sec % 86400) / 3600));
+    m.textContent = pad(Math.floor((sec % 3600) / 60));
+    s.textContent = pad(sec % 60);
+  }
+  tick();
+  var iv = setInterval(tick, 1000);
+})();
+
+// ── "Taqvimga qo'shish" — .ics fayl yuklab beradi (barcha kalendarlar) ──
+(function () {
+  var btn = document.getElementById('addcal');
+  if (!btn) return;
+  var ics = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Akmal Farm//Taklifnoma//UZ', 'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT', 'UID:akmal-ochilish-2026@akmalfarm.uz', 'DTSTAMP:20260701T000000Z',
+    'DTSTART:20260702T060000Z', 'DTEND:20260702T080000Z',
+    'SUMMARY:Akmal Farm — yangi filial ochilishi',
+    'DESCRIPTION:Yangi dorixona ochilish marosimi. Sizni kutamiz!',
+    'LOCATION:Andijon vil.\\, Qoʼrgʼontepa t.\\, Yuksalish MFY\\, Mustaqillik koʼchasi 972',
+    'END:VEVENT', 'END:VCALENDAR'
+  ].join('\r\n');
+  btn.addEventListener('click', function () {
+    var blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'akmal-farm-ochilish.ics';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+    btn.classList.add('done');
+    var i = btn.querySelector('.ct i');
+    if (i) i.textContent = 'Yuklab olindi ✓ · Готово';
+  });
+})();
+
+// ── Kapsula parallaksi (nozik, hero reveal tugagach) ──────────────────
+(function () {
+  var reduce = false;
+  try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  var stage = document.querySelector('.hero .stage3d');
+  if (!stage || reduce) return;
+  var ticking = false;
+  function update() {
+    var y = window.pageYOffset || 0;
+    stage.style.transform = 'translateY(' + (y * 0.08).toFixed(1) + 'px)';
+    ticking = false;
+  }
+  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+  // hero reveal animatsiyasi tugagach ulanamiz (transform to'qnashuvidan qochish)
+  setTimeout(function () {
+    stage.style.animation = 'none';
+    window.addEventListener('scroll', onScroll, { passive: true });
+    update();
+  }, 1100);
+})();
+
 // ── RSVP ──────────────────────────────────────────────────────────────
 (function () {
   var block = document.getElementById('rsvp-form-block');
