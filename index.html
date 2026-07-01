@@ -322,4 +322,17 @@ if(renderer){
       else{setStatus('err','Xatolik. Qayta urinib koʼring \u00B7 Ошибка, попробуйте ещё раз');}
     });
   });
+})();</script><script>(function(){
+  function isHidden(el){try{return getComputedStyle(el).opacity==='0';}catch(e){return false;}}
+  function revealAll(){
+    document.documentElement.classList.add('no-motion');
+    var els=document.querySelectorAll('.reveal,.reveal-up');
+    for(var i=0;i<els.length;i++){els[i].style.opacity='1';els[i].style.transform='none';}
+  }
+  function check(){
+    var h=document.querySelector('.hero h1')||document.querySelector('.hero .reveal');
+    if(!h||isHidden(h)){revealAll();}
+  }
+  setTimeout(check,2000);
+  window.addEventListener('load',function(){setTimeout(check,600);});
 })();</script></body></html>
