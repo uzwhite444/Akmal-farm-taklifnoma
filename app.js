@@ -1,4 +1,27 @@
-// Akmal Farm — Taklifnoma :: RSVP logic (external, CSP-compliant under script-src 'self')
+// Akmal Farm — Taklifnoma :: external script (CSP-compliant under script-src 'self')
+
+// ── Scroll-reveal engine (Motion'ning inView o'rnini bosadi, CSP-mos) ──
+// Progressive enhancement: .js-scroll qo'shilmasa kontent baribir ko'rinadi.
+(function () {
+  var reduce = false;
+  try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  if (reduce || !('IntersectionObserver' in window)) return;
+
+  document.documentElement.classList.add('js-scroll');
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.16, rootMargin: '0px 0px -6% 0px' });
+
+  document.querySelectorAll('.reveal-up, .ecg').forEach(function (el) { io.observe(el); });
+})();
+
+// ── RSVP ──────────────────────────────────────────────────────────────
 (function () {
   var block = document.getElementById('rsvp-form-block');
   if (!block) return;
