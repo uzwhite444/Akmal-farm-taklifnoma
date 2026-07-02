@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Akmal Farm — Boshqaruv paneli</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<!-- ══════════ LOGIN EKRANI ══════════ -->
+<main class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    <h1>Akmal Farm</h1>
+    <p class="gate-sub">Boshqaruv paneli &middot; Панель управления</p>
+    <form id="loginForm" class="gate-form" novalidate>
+      <label class="field">
+        <span>Login</span>
+        <input name="username" type="text" autocomplete="username" required autofocus>
+      </label>
+      <label class="field">
+        <span>Parol &middot; Пароль</span>
+        <input name="password" type="password" autocomplete="current-password" required>
+      </label>
+      <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Kirish &middot; Войти</button>
+      <div class="gate-status" id="gateStatus" role="status" aria-live="polite"></div>
+    </form>
+  </div>
+</main>
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<div class="app" id="app" hidden>
+  <header class="topbar">
+    <div class="topbar-brand">
+      <span class="topbar-badge">AF</span>
+      <div>
+        <div class="topbar-title">Akmal Farm</div>
+        <div class="topbar-sub">Kontent boshqaruvi</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a class="btn btn-ghost" href="/" target="_blank" rel="noopener">
+        Saytni ochish
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>
+      </a>
+      <span class="topbar-user" id="topbarUser"></span>
+      <button class="btn btn-ghost" id="logoutBtn" type="button">Chiqish</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <form id="contentForm" novalidate>
+
+      <section class="panel">
+        <div class="panel-head">
+          <span class="panel-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </span>
+          <div>
+            <h2>Sarlavha va tavsif</h2>
+            <p>Bosh sahifadagi asosiy matn &middot; Главный текст на странице</p>
+          </div>
+        </div>
+        <div class="grid2">
+          <label class="field">
+            <span>Sarlavha (UZ) <i data-max="120">0/120</i></span>
+            <input name="hero.title_uz" maxlength="120" placeholder="YANGI DORIXONA OCHILISHI">
+          </label>
+          <label class="field">
+            <span>Заголовок (RU) <i data-max="120">0/120</i></span>
+            <input name="hero.title_ru" maxlength="120" placeholder="Открытие новой аптеки">
+          </label>
+          <label class="field field-wide">
+            <span>Tavsif (UZ) <i data-max="400">0/400</i></span>
+            <textarea name="hero.lead_uz" maxlength="400" rows="3"></textarea>
+          </label>
+          <label class="field field-wide">
+            <span>Описание (RU) <i data-max="400">0/400</i></span>
+            <textarea name="hero.lead_ru" maxlength="400" rows="3"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <span class="panel-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+          </span>
+          <div>
+            <h2>Tadbir tafsilotlari</h2>
+            <p>Sana, vaqt, manzil &middot; Дата, время, адрес</p>
+          </div>
+        </div>
+        <div class="grid2">
+          <label class="field">
+            <span>Sana matni (UZ)</span>
+            <input name="event.date_uz" maxlength="60" placeholder="2-iyul 2026">
+          </label>
+          <label class="field">
+            <span>Текст даты (RU)</span>
+            <input name="event.date_ru" maxlength="60" placeholder="2 июля 2026">
+          </label>
+          <label class="field">
+            <span>Vaqt matni (UZ)</span>
+            <input name="event.time_uz" maxlength="40" placeholder="soat 11:00">
+          </label>
+          <label class="field">
+            <span>Текст времени (RU)</span>
+            <input name="event.time_ru" maxlength="40" placeholder="11:00">
+          </label>
+          <label class="field field-wide">
+            <span>Sanoq mo'ljali (Toshkent, UTC+5) <i class="hint">bosh sahifadagi taymer shunga qarab hisoblanadi</i></span>
+            <input name="event.countdown_target_local" type="datetime-local">
+          </label>
+          <label class="field field-wide">
+            <span>Manzil (UZ) <i data-max="300">0/300</i></span>
+            <textarea name="event.address_uz" maxlength="300" rows="2"></textarea>
+          </label>
+          <label class="field field-wide">
+            <span>Адрес (RU) <i data-max="300">0/300</i></span>
+            <textarea name="event.address_ru" maxlength="300" rows="2"></textarea>
+          </label>
+          <label class="field field-wide">
+            <span>Xarita havolasi (Google Maps) <a href="#" id="mapCheckLink" target="_blank" rel="noopener">tekshirish ↗</a></span>
+            <input name="event.map_url" type="url" placeholder="https://maps.app.goo.gl/...">
+          </label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <span class="panel-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.11 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </span>
+          <div>
+            <h2>Imzo va aloqa</h2>
+            <p>Sahifa pastidagi matn &middot; Текст в подвале</p>
+          </div>
+        </div>
+        <div class="grid2">
+          <label class="field">
+            <span>Imzo (UZ)</span>
+            <input name="footer.sign_uz" maxlength="120" placeholder="HURMAT BILAN, AKMAL FARM">
+          </label>
+          <label class="field">
+            <span>Подпись (RU)</span>
+            <input name="footer.sign_ru" maxlength="120" placeholder="С уважением, Akmal Farm">
+          </label>
+          <label class="field">
+            <span>Telefon</span>
+            <input name="footer.phone" maxlength="40" placeholder="1080">
+          </label>
+          <label class="field">
+            <span>Sayt</span>
+            <input name="footer.site" maxlength="80" placeholder="akmalfarm.uz">
+          </label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <span class="panel-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          </span>
+          <div>
+            <h2>Sahifa nomi</h2>
+            <p>Brauzer tab / ulashish uchun sarlavha</p>
+          </div>
+        </div>
+        <div class="grid2">
+          <label class="field field-wide">
+            <span>Page title</span>
+            <input name="meta.page_title" maxlength="120" placeholder="Akmal Farm — Taklifnoma">
+          </label>
+        </div>
+      </section>
+
+    </form>
+  </main>
+
+  <footer class="savebar">
+    <div class="savebar-meta" id="savebarMeta">—</div>
+    <div class="savebar-actions">
+      <span class="save-status" id="saveStatus" role="status" aria-live="polite"></span>
+      <button type="submit" form="contentForm" class="btn btn-primary" id="saveBtn">Saqlash &middot; Сохранить</button>
+    </div>
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="admin.js"></script>
+</body>
+</html>

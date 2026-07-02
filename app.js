@@ -21,20 +21,24 @@
   document.querySelectorAll('.reveal-up, .ecg').forEach(function (el) { io.observe(el); });
 })();
 
-// ── Countdown: 2-iyul 2026, 11:00 (Oʻzbekiston, UTC+5) ────────────────
+// ── Countdown: standart 2-iyul 2026, 11:00 (Oʻzbekiston, UTC+5) ────────
+// Kontent yuklansa (pastda), nishon vaqt admin panelda kiritilgan
+// qiymatga almashtiriladi — sahifa qayta yuklanmasdan.
 (function () {
   var cd = document.getElementById('cd');
   if (!cd) return;
   var target = new Date('2026-07-02T11:00:00+05:00').getTime();
+  var done = false;
   var d = cd.querySelector('[data-cd=d]'), h = cd.querySelector('[data-cd=h]'),
       m = cd.querySelector('[data-cd=m]'), s = cd.querySelector('[data-cd=s]');
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function tick() {
+    if (done) return;
     var diff = target - Date.now();
     if (diff <= 0) {
       var g = cd.querySelector('.cd-grid');
       if (g) g.innerHTML = '<div class="cd-done">Marosim boshlandi! · Мероприятие началось!</div>';
-      clearInterval(iv);
+      done = true;
       return;
     }
     var sec = Math.floor(diff / 1000);
@@ -44,7 +48,46 @@
     s.textContent = pad(sec % 60);
   }
   tick();
-  var iv = setInterval(tick, 1000);
+  setInterval(tick, 1000);
+  window.__akmalSetCountdownTarget = function (iso) {
+    var t = Date.parse(iso);
+    if (!Number.isNaN(t)) { target = t; done = false; tick(); }
+  };
+})();
+
+// ── Kontentni /api/content'dan yuklash (admin panelda tahrirlangan) ────
+// Progressive enhancement: so'rov muvaffaqiyatsiz bo'lsa, sahifadagi
+// standart matnlar (server-render qilingan) o'zgarishsiz qoladi.
+(function () {
+  function get(obj, path) {
+    return path.split('.').reduce(function (o, k) { return o && typeof o === 'object' ? o[k] : undefined; }, obj);
+  }
+  fetch('/api/content', { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (res) {
+      var data = res && res.data;
+      if (!data || typeof data !== 'object') return;
+
+      document.querySelectorAll('[data-ck]').forEach(function (el) {
+        var val = get(data, el.getAttribute('data-ck'));
+        if (typeof val === 'string' && val) el.textContent = val;
+      });
+
+      var mapUrl = get(data, 'event.map_url');
+      var mapLink = document.getElementById('event-map-link');
+      if (mapLink && typeof mapUrl === 'string' && /^https:\/\//i.test(mapUrl)) {
+        mapLink.setAttribute('href', mapUrl);
+      }
+
+      var pageTitle = get(data, 'meta.page_title');
+      if (typeof pageTitle === 'string' && pageTitle) document.title = pageTitle;
+
+      var iso = get(data, 'event.countdown_target_iso');
+      if (typeof iso === 'string' && iso && window.__akmalSetCountdownTarget) {
+        window.__akmalSetCountdownTarget(iso);
+      }
+    })
+    .catch(function () { /* jim: statik matnlar ko'rinishda qoladi */ });
 })();
 
 // "Taqvimga qo'shish" tugmasi endi to'g'ridan-to'g'ri /akmal-farm-ochilish.ics
