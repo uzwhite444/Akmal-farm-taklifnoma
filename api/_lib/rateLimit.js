@@ -2,13 +2,13 @@
 
 const crypto = require("crypto");
 const { sbSelect, sbInsert } = require("./supabase");
+const { clientIp } = require("./net");
 
 const WINDOW_MIN = 15;
 const MAX_FAILS = 8;
 
 function ipHash(req) {
-  const ip = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim() || "unknown";
-  return crypto.createHash("sha256").update(ip + "|" + (process.env.IP_SALT || "akmal")).digest("hex");
+  return crypto.createHash("sha256").update(clientIp(req) + "|" + (process.env.IP_SALT || "akmal")).digest("hex");
 }
 
 // Diqqat: agar baza/jadval vaqtincha ishlamasa, "fail open" qilamiz —

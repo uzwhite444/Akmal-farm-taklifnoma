@@ -10,6 +10,7 @@
 //   IP_SALT                      (ixtiyoriy)
 
 const crypto = require("crypto");
+const { clientIp } = require("./_lib/net");
 
 // Anti-spam sozlamalari
 const MIN_FILL_MS = 2500;      // < 2.5s to'ldirish = bot
@@ -55,8 +56,7 @@ module.exports = async function handler(req, res) {
   const base = SUPABASE_URL.replace(/\/$/, "") + "/rest/v1/rsvps";
   const H = { apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json" };
 
-  const ip = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim() || "unknown";
-  const ipHash = sha256(ip + "|" + (process.env.IP_SALT || "akmal"));
+  const ipHash = sha256(clientIp(req) + "|" + (process.env.IP_SALT || "akmal"));
 
   try {
     // Anti-spam #3: IP rate-limit
