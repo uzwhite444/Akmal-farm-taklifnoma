@@ -11,14 +11,23 @@ function ipHash(req) {
   return crypto.createHash("sha256").update(ip + "|" + (process.env.IP_SALT || "akmal")).digest("hex");
 }
 
+// Diqqat: agar baza/jadval vaqtincha ishlamasa, "fail open" qilamiz —
+// login urinishi asosiy tekshiruvga (parol) o'tadi, faqat qo'shimcha
+// himoya qatlami vaqtincha o'chadi. Aks holda baza uzilishi butun CMS'ni
+// login qilib bo'lmaydigan holga keltiradi.
 async function isLocked(req) {
   const hash = ipHash(req);
-  const since = new Date(Date.now() - WINDOW_MIN * 60000).toISOString();
-  const rows = await sbSelect(
-    "admin_login_attempts",
-    `select=id&ip_hash=eq.${hash}&success=eq.false&created_at=gte.${encodeURIComponent(since)}&limit=${MAX_FAILS + 1}`
-  );
-  return { locked: Array.isArray(rows) && rows.length >= MAX_FAILS, hash };
+  try {
+    const since = new Date(Date.now() - WINDOW_MIN * 60000).toISOString();
+    const rows = await sbSelect(
+      "admin_login_attempts",
+      `select=id&ip_hash=eq.${hash}&success=eq.false&created_at=gte.${encodeURIComponent(since)}&limit=${MAX_FAILS + 1}`
+    );
+    return { locked: Array.isArray(rows) && rows.length >= MAX_FAILS, hash };
+  } catch (e) {
+    console.error("rate-limit check failed, failing open:", e.message);
+    return { locked: false, hash };
+  }
 }
 
 async function recordAttempt(hash, username, success) {
