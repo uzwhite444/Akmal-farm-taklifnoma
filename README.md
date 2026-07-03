@@ -15,6 +15,8 @@ Vercel Serverless Function (`/api/rsvp`) · Supabase (Postgres + RLS) · Telegra
 - ✍️ Iconographed RSVP form with a yes/no toggle, focus rings, and an animated success state.
 - 🛠️ **Admin panel (`/admin`)** — edit every event text (title, date, address, map link, footer)
   from a dashboard; changes appear on the live site instantly, no redeploy.
+- 📊 **RSVP report** — coming/not-coming counts and guest totals, grouped by location, with
+  one-click **Excel/CSV export** (UTF-8 BOM so Cyrillic opens correctly).
 - 🔒 Zero secrets in the browser — the frontend posts to same-origin serverless functions only.
 - 🔐 **Admin auth:** scrypt-hashed password, HMAC-signed HttpOnly/Secure/SameSite cookie session,
   IP-based brute-force lockout, generic error messages (no user enumeration).
@@ -69,6 +71,7 @@ supabase/
 2. **SQL Editor** → New query → по очереди вставить и запустить:
    - [`supabase/migrations/0001_rsvps.sql`](supabase/migrations/0001_rsvps.sql) → таблица `rsvps`.
    - [`supabase/migrations/0002_site_content.sql`](supabase/migrations/0002_site_content.sql) → таблица `site_content` (контент админ-панели) + `admin_login_attempts` (защита от подбора пароля).
+   - [`supabase/migrations/0003_rsvp_location.sql`](supabase/migrations/0003_rsvp_location.sql) → колонка `location` в `rsvps` (для отчёта по локациям).
 3. **Settings → API** → скопировать два значения:
    - **Project URL** → `SUPABASE_URL`
    - **service_role** (secret) → `SUPABASE_SERVICE_ROLE_KEY` ⚠️ секрет, не публикуй.
@@ -121,6 +124,17 @@ supabase/
 форма со всеми текстами сайта (двуязычно UZ/RU), таймер до события, ссылка
 на карту. Нажал **Сохранить** — изменения сразу видны на сайте (без деплоя,
 без правки файлов).
+
+### Отчёт по RSVP
+
+Вверху панели — блок **«Javoblar hisoboti / Отчёт»**:
+- сводка: сколько всего ответов, сколько **придёт** (людей и ответов), сколько **не придёт**;
+- разбивка **по локациям** (каждый ответ помечается текущей «локацией» из поля
+  `event.location_name` — меняй его при каждом новом открытии филиала, тогда отчёт
+  сгруппируется по филиалам, а старые ответы сохранят свою локацию);
+- таблица всех ответов (имя, телефон, статус, гости, дата);
+- кнопка **«Excel / CSV»** — скачивает файл, который сразу открывается в Excel
+  (UTF-8 BOM + разделитель `;`, кириллица не ломается).
 
 ### Настройка логина (один раз)
 

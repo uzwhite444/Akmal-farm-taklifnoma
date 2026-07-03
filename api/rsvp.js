@@ -71,17 +71,39 @@ module.exports = async function handler(req, res) {
     const pRows = await pRes.json();
     if (Array.isArray(pRows) && pRows.length > 0) return res.status(200).json({ ok: true, skipped: "duplicate" });
 
-    // Bazaga yozish
-    const insRes = await fetch(base, {
-      method: "POST",
-      headers: { ...H, Prefer: "return=representation" },
-      body: JSON.stringify({ name, phone, attending, guests, message: message || null, ip_hash: ipHash }),
-    });
-    if (!insRes.ok) {
-      console.error("insert failed:", await insRes.text());
+    // Joriy tadbir lokatsiyasi (hisobot uchun har bir javobga muhrlanadi)
+    let locationName = "Qoʻrgʻontepa filiali";
+    try {
+      const cRes = await fetch(`${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/site_content?select=data&id=eq.1&limit=1`, { headers: H });
+      if (cRes.ok) {
+        const cRows = await cRes.json();
+        const ln = cRows && cRows[0] && cRows[0].data && cRows[0].data.event && cRows[0].data.event.location_name;
+        if (typeof ln === "string" && ln.trim()) locationName = ln.trim();
+      }
+    } catch (e) { /* default lokatsiya */ }
+
+    // Bazaga yozish (location bilan; agar 0003 migratsiya hali ishlamagan
+    // bo'lsa — location ustunisiz qayta urinamiz, RSVP hech qachon buzilmaydi)
+    const rowBase = { name, phone, attending, guests, message: message || null, ip_hash: ipHash };
+    async function tryInsert(row) {
+      const r = await fetch(base, { method: "POST", headers: { ...H, Prefer: "return=representation" }, body: JSON.stringify(row) });
+      return { ok: r.ok, r };
+    }
+    let ins = await tryInsert({ ...rowBase, location: locationName });
+    if (!ins.ok) {
+      const t = await ins.r.text();
+      if (/location/i.test(t)) {
+        ins = await tryInsert(rowBase);
+      } else {
+        console.error("insert failed:", t);
+        return res.status(500).json({ error: "db_error" });
+      }
+    }
+    if (!ins.ok) {
+      console.error("insert failed (retry):", await ins.r.text());
       return res.status(500).json({ error: "db_error" });
     }
-    const inserted = await insRes.json();
+    const inserted = await ins.r.json();
     const id = Array.isArray(inserted) && inserted[0] ? inserted[0].id : null;
 
     // Telegram bildirishnomasi
@@ -93,6 +115,7 @@ module.exports = async function handler(req, res) {
       const st = attending ? "✅ KELADI / ПРИДЁТ" : "❌ KELMAYDI / НЕ ПРИДЁТ";
       const text = [
         "🎉 <b>Yangi javob — Akmal Farm ochilishi</b>", "", st,
+        `📍 ${esc(locationName)}`,
         `👤 <b>${esc(name)}</b>`, `📞 ${esc(phone)}`,
         attending ? `👥 Mehmonlar / Гостей: <b>${guests}</b>` : "",
         message ? `💬 ${esc(message)}` : "",

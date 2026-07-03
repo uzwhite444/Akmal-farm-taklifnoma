@@ -10,6 +10,7 @@ const DEFAULT_CONTENT = {
     lead_ru: "Уважаемый гость! Приглашаем Вас на открытие нового филиала сети «Akmal Farm» в Кургантепа.",
   },
   event: {
+    location_name: "Qoʻrgʻontepa filiali",
     date_uz: "2-iyul 2026",
     date_ru: "2 июля 2026",
     time_uz: "soat 11:00",
@@ -34,6 +35,7 @@ const DEFAULT_CONTENT = {
 const FIELDS = {
   "hero.title_uz": { max: 120 }, "hero.title_ru": { max: 120 },
   "hero.lead_uz": { max: 400 }, "hero.lead_ru": { max: 400 },
+  "event.location_name": { max: 120 },
   "event.date_uz": { max: 60 }, "event.date_ru": { max: 60 },
   "event.time_uz": { max: 40 }, "event.time_ru": { max: 40 },
   "event.countdown_target_iso": { max: 40, iso: true },

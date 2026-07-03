@@ -15,6 +15,11 @@
   var logoutBtn = document.getElementById("logoutBtn");
   var mapCheckLink = document.getElementById("mapCheckLink");
   var toastEl = document.getElementById("toast");
+  var statRow = document.getElementById("statRow");
+  var reportLoc = document.getElementById("reportLoc");
+  var reportTbody = document.getElementById("reportTbody");
+  var reportNote = document.getElementById("reportNote");
+  var reportRefresh = document.getElementById("reportRefresh");
 
   var TZ_SUFFIX = ":00+05:00"; // butun sayt Toshkent (UTC+5) ni qattiq qabul qiladi
 
@@ -38,6 +43,13 @@
 
   function get(obj, path) {
     return path.split(".").reduce(function (o, k) { return o && typeof o === "object" ? o[k] : undefined; }, obj);
+  }
+
+  // XSS-xavfsiz: foydalanuvchi kiritgan matnni HTML sifatida emas, matn sifatida chiqaradi.
+  function esc(s) {
+    var d = document.createElement("div");
+    d.textContent = s == null ? "" : String(s);
+    return d.innerHTML;
   }
 
   function isoToLocalInput(iso) {
@@ -128,9 +140,58 @@
     });
   }
 
+  function renderReport(body) {
+    var sum = body.summary || { totals: {}, locations: [] };
+    var t = sum.totals || {};
+    statRow.innerHTML =
+      '<div class="stat total"><b>' + (t.responses || 0) + '</b><span class="sub">Jami javob &middot; Всего ответов</span></div>' +
+      '<div class="stat coming"><b>' + (t.coming_people || 0) + '</b><span class="sub">Keladi (mehmon) &middot; Придут (чел.) — ' + (t.coming_responses || 0) + ' javob</span></div>' +
+      '<div class="stat notcoming"><b>' + (t.notcoming_responses || 0) + '</b><span class="sub">Kela olmaydi &middot; Не придут</span></div>';
+
+    reportLoc.innerHTML = (sum.locations || []).map(function (l) {
+      return '<div class="loc-row"><div class="loc-name">' + esc(l.location) + '</div>' +
+        '<div class="loc-badges">' +
+        '<span class="loc-badge yes">✓ ' + l.coming_responses + '</span>' +
+        '<span class="loc-badge ppl">' + l.coming_people + ' чел.</span>' +
+        '<span class="loc-badge no">✕ ' + l.notcoming_responses + '</span>' +
+        '</div></div>';
+    }).join("");
+
+    var rows = body.rows || [];
+    reportTbody.innerHTML = rows.map(function (r) {
+      return "<tr>" +
+        '<td class="muted">' + esc(r.location || "—") + "</td>" +
+        "<td>" + esc(r.name) + "</td>" +
+        "<td>" + esc(r.phone) + "</td>" +
+        '<td><span class="pill ' + (r.attending ? "yes" : "no") + '">' + (r.attending ? "Придёт" : "Не придёт") + "</span></td>" +
+        '<td class="num">' + (r.attending ? (Number(r.guests) || 0) : "—") + "</td>" +
+        '<td class="muted">' + esc(fmtDate(r.created_at)) + "</td>" +
+        "</tr>";
+    }).join("");
+
+    if (!rows.length) { reportNote.hidden = false; reportNote.className = "report-note"; reportNote.textContent = "Hozircha javoblar yo'q · Пока нет ответов"; }
+    else { reportNote.hidden = true; }
+  }
+
+  function loadReport() {
+    if (!statRow) return;
+    return api("/api/admin/rsvps").then(function (res) {
+      if (res.status === 401) { showGate(); return; }
+      if (!res.ok) {
+        statRow.innerHTML = ""; reportLoc.innerHTML = ""; reportTbody.innerHTML = "";
+        reportNote.hidden = false; reportNote.className = "report-note";
+        reportNote.textContent = "Hisobotni yuklab bo'lmadi. Supabase'da 0002 va 0003 migratsiyalar bajarilganini tekshiring.";
+        return;
+      }
+      renderReport(res.body);
+    }).catch(function () {
+      if (reportNote) { reportNote.hidden = false; reportNote.textContent = "Tarmoq xatosi"; }
+    });
+  }
+
   function checkSession() {
     return api("/api/admin/session").then(function (res) {
-      if (res.ok) { showApp(); loadContent(); }
+      if (res.ok) { showApp(); loadContent(); loadReport(); }
       else { showGate(); }
     });
   }
@@ -151,6 +212,7 @@
           loginForm.password.value = "";
           showApp();
           loadContent();
+          loadReport();
         } else if (res.status === 429) {
           gateStatus.textContent = "Juda ko'p urinish. Birozdan so'ng qayta urining.";
         } else {
@@ -165,6 +227,11 @@
 
   logoutBtn.addEventListener("click", function () {
     api("/api/admin/logout", { method: "POST" }).then(function () { showGate(); });
+  });
+
+  if (reportRefresh) reportRefresh.addEventListener("click", function () {
+    reportRefresh.disabled = true;
+    Promise.resolve(loadReport()).then(function () { reportRefresh.disabled = false; });
   });
 
   contentForm.addEventListener("input", function (e) {
