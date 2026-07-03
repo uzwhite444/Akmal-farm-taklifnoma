@@ -1,9 +1,12 @@
 // Akmal Farm — Taklifnoma :: RSVP hisoboti (AUTH SHART)
 // GET                -> JSON: barcha javoblar + lokatsiyalar bo'yicha jamlanma
-// GET ?format=csv    -> Excel/CSV yuklab beradi (UTF-8 BOM, ; ajratgich)
+// GET ?format=xlsx   -> haqiqiy Excel fayl (.xlsx, kirill buzilmaydi)
+// GET ?format=doc    -> Word hujjat (.doc, HTML jadval)
+// GET ?format=csv    -> CSV (UTF-8 BOM, ; ajratgich) — zaxira
 
 const { requireSession } = require("../_lib/auth");
 const { sbSelect } = require("../_lib/supabase");
+const { buildXlsx } = require("../_lib/xlsx");
 
 async function fetchRows() {
   // Eng yangi birinchi; katta ziyofat uchun ham yetarli chegara.
@@ -56,24 +59,44 @@ function csvCell(v) {
   return s;
 }
 
+const HEADER = ["Lokatsiya / Локация", "Ism / Имя", "Telefon / Телефон", "Holat / Статус", "Mehmonlar / Гостей", "Izoh / Комментарий", "Sana / Дата"];
+function fmtDt(iso) {
+  try { return new Date(iso).toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" }); } catch (e) { return String(iso || ""); }
+}
+function rowToArr(r) {
+  return [
+    r.location || "—",
+    r.name || "",
+    r.phone || "",
+    r.attending ? "Придёт / Keladi" : "Не придёт / Kelmaydi",
+    r.attending ? String(Number(r.guests) || 0) : "0",
+    r.message || "",
+    fmtDt(r.created_at),
+  ];
+}
+const htmlEsc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
 function toCsv(rows) {
-  const header = ["Lokatsiya / Локация", "Ism / Имя", "Telefon / Телефон", "Holat / Статус", "Mehmonlar / Гостей", "Izoh / Комментарий", "Sana / Дата"];
-  const lines = [header.map(csvCell).join(";")];
-  for (const r of rows) {
-    let dt = r.created_at;
-    try { dt = new Date(r.created_at).toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" }); } catch (e) { /* raw */ }
-    lines.push([
-      csvCell(r.location || "—"),
-      csvCell(r.name),
-      csvCell(r.phone),
-      csvCell(r.attending ? "Придёт / Keladi" : "Не придёт / Kelmaydi"),
-      csvCell(r.attending ? (Number(r.guests) || 0) : 0),
-      csvCell(r.message || ""),
-      csvCell(dt),
-    ].join(";"));
-  }
-  // \r\n va UTF-8 BOM — Excel kirillni to'g'ri ochishi uchun
+  const lines = [HEADER.map(csvCell).join(";")];
+  for (const r of rows) lines.push(rowToArr(r).map(csvCell).join(";"));
+  // \r\n va UTF-8 BOM
   return "﻿" + lines.join("\r\n") + "\r\n";
+}
+
+function toDoc(rows) {
+  const s = summarize(rows);
+  const body = rows.map((r) => {
+    const a = rowToArr(r);
+    return "<tr>" + a.map((c, i) => `<td${i === 4 ? ' align="center"' : ""}>${htmlEsc(c)}</td>`).join("") + "</tr>";
+  }).join("");
+  return "﻿<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Akmal Farm — Hisobot</title>" +
+    "<style>body{font-family:Arial,sans-serif;color:#15243c}h1{color:#15315a;font-size:20px;margin:0 0 4px}" +
+    ".sub{color:#5b6b85;font-size:12px;margin:0 0 14px}table{border-collapse:collapse;width:100%}" +
+    "th,td{border:1px solid #b9c4d6;padding:6px 9px;font-size:12px;text-align:left;vertical-align:top}" +
+    "th{background:#15315a;color:#fff;font-size:11px}</style></head><body>" +
+    "<h1>Akmal Farm — Javoblar hisoboti</h1>" +
+    `<p class="sub">Jami javob: <b>${s.totals.responses}</b> &nbsp;·&nbsp; Keladi (mehmon): <b>${s.totals.coming_people}</b> &nbsp;·&nbsp; Kela olmaydi: <b>${s.totals.notcoming_responses}</b></p>` +
+    "<table><tr>" + HEADER.map((h) => `<th>${htmlEsc(h)}</th>`).join("") + "</tr>" + body + "</table></body></html>";
 }
 
 module.exports = async function handler(req, res) {
@@ -92,12 +115,23 @@ module.exports = async function handler(req, res) {
   }
 
   const format = req.query && req.query.format;
+  const stamp = new Date().toISOString().slice(0, 10);
+
+  if (format === "xlsx") {
+    const buf = buildXlsx([HEADER, ...rows.map(rowToArr)], { sheetName: "Javoblar", widths: [26, 24, 20, 22, 12, 34, 20] });
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename="akmal-rsvp-${stamp}.xlsx"`);
+    return res.status(200).send(buf);
+  }
+  if (format === "doc") {
+    res.setHeader("Content-Type", "application/msword; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="akmal-rsvp-${stamp}.doc"`);
+    return res.status(200).send(toDoc(rows));
+  }
   if (format === "csv") {
-    const csv = toCsv(rows);
-    const stamp = new Date().toISOString().slice(0, 10);
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader("Content-Disposition", `attachment; filename="akmal-rsvp-${stamp}.csv"`);
-    return res.status(200).send(csv);
+    return res.status(200).send(toCsv(rows));
   }
 
   return res.status(200).json({ ok: true, rows, summary: summarize(rows) });

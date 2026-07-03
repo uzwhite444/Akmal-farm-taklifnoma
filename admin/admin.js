@@ -20,6 +20,8 @@
   var reportTbody = document.getElementById("reportTbody");
   var reportNote = document.getElementById("reportNote");
   var reportRefresh = document.getElementById("reportRefresh");
+  var exportPng = document.getElementById("exportPng");
+  var lastReport = null;
 
   var TZ_SUFFIX = ":00+05:00"; // butun sayt Toshkent (UTC+5) ni qattiq qabul qiladi
 
@@ -141,6 +143,7 @@
   }
 
   function renderReport(body) {
+    lastReport = body;
     var sum = body.summary || { totals: {}, locations: [] };
     var t = sum.totals || {};
     statRow.innerHTML =
@@ -189,6 +192,82 @@
     });
   }
 
+  // ── PNG: hisobot xulosasini rasm qilib yuklab beradi (sof canvas, CSP-mos) ──
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+  function fitText(ctx, s, maxw) {
+    s = String(s == null ? "" : s);
+    if (ctx.measureText(s).width <= maxw) return s;
+    while (s.length > 1 && ctx.measureText(s + "…").width > maxw) s = s.slice(0, -1);
+    return s + "…";
+  }
+  function generatePng() {
+    if (!lastReport) { toast("Avval hisobot yuklansin", true); return; }
+    var sum = lastReport.summary || { totals: {}, locations: [] };
+    var t = sum.totals || {};
+    var locs = sum.locations || [];
+    var dpr = 2, W = 760, pad = 32, headerH = 92, statH = 116, statGap = 16;
+    var locStart = headerH + 26 + statH + 30;
+    var H = locStart + 16 + Math.max(1, locs.length) * 54 + 24;
+    var cv = document.createElement("canvas");
+    cv.width = W * dpr; cv.height = H * dpr;
+    var g = cv.getContext("2d"); g.scale(dpr, dpr);
+
+    g.fillStyle = "#f3f5f9"; g.fillRect(0, 0, W, H);
+    g.fillStyle = "#15315a"; g.fillRect(0, 0, W, headerH);
+    g.fillStyle = "#fff"; g.font = "800 25px Arial"; g.fillText("Akmal Farm", pad, 40);
+    g.fillStyle = "#a9bcd8"; g.font = "400 14px Arial"; g.fillText("Javoblar hisoboti · Отчёт", pad, 62);
+    g.fillStyle = "#ff8a95"; g.font = "700 12px Arial"; g.textAlign = "right";
+    var ds = ""; try { ds = new Date().toLocaleString("ru-RU"); } catch (e) { }
+    g.fillText(ds, W - pad, 40); g.textAlign = "left";
+
+    var sy = headerH + 26, cw = (W - pad * 2 - statGap * 2) / 3;
+    function stat(cx, val, label, color, bg) {
+      g.fillStyle = bg; roundRect(g, cx, sy, cw, statH, 14); g.fill();
+      g.fillStyle = color; g.font = "800 38px Arial"; g.fillText(String(val), cx + 18, sy + 58);
+      g.fillStyle = "#5b6b85"; g.font = "600 12px Arial"; g.fillText(fitText(g, label, cw - 30), cx + 18, sy + 90);
+    }
+    stat(pad, t.responses || 0, "Jami · Всего", "#15315a", "#eef2fb");
+    stat(pad + cw + statGap, t.coming_people || 0, "Придут (чел.)", "#1c9c5b", "#eafaf1");
+    stat(pad + 2 * (cw + statGap), t.notcoming_responses || 0, "Не придут", "#c41d30", "#fdeef0");
+
+    var ly = locStart;
+    g.fillStyle = "#15315a"; g.font = "700 14px Arial"; g.fillText("Lokatsiyalar · По локациям", pad, ly); ly += 16;
+    locs.forEach(function (l) {
+      g.fillStyle = "#fff"; roundRect(g, pad, ly, W - pad * 2, 46, 10); g.fill();
+      g.strokeStyle = "#e3e8f0"; g.lineWidth = 1; roundRect(g, pad, ly, W - pad * 2, 46, 10); g.stroke();
+      g.fillStyle = "#15315a"; g.font = "700 13px Arial";
+      g.fillText(fitText(g, l.location, W - pad * 2 - 250), pad + 14, ly + 28);
+      var bx = W - pad - 12;
+      function badge(txt, col, bg) {
+        g.font = "700 12px Arial"; var w = g.measureText(txt).width + 18;
+        bx -= w; g.fillStyle = bg; roundRect(g, bx, ly + 12, w, 22, 7); g.fill();
+        g.fillStyle = col; g.fillText(txt, bx + 9, ly + 27); bx -= 7;
+      }
+      badge("✕ " + l.notcoming_responses, "#c41d30", "#fdeef0");
+      badge(l.coming_people + " чел.", "#15315a", "#eef2fb");
+      badge("✓ " + l.coming_responses, "#1c9c5b", "#e8f8ef");
+      ly += 54;
+    });
+
+    cv.toBlob(function (blob) {
+      if (!blob) { toast("PNG yaratib bo'lmadi", true); return; }
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url; a.download = "akmal-hisobot.png";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+      toast("PNG yuklab olindi");
+    }, "image/png");
+  }
+
   function checkSession() {
     return api("/api/admin/session").then(function (res) {
       if (res.ok) { showApp(); loadContent(); loadReport(); }
@@ -233,6 +312,8 @@
     reportRefresh.disabled = true;
     Promise.resolve(loadReport()).then(function () { reportRefresh.disabled = false; });
   });
+
+  if (exportPng) exportPng.addEventListener("click", generatePng);
 
   contentForm.addEventListener("input", function (e) {
     if (e.target.hasAttribute("maxlength")) updateCounters(contentForm);
