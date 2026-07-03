@@ -5,12 +5,24 @@
 const { requireSession } = require("../_lib/auth");
 const { sbSelect } = require("../_lib/supabase");
 
-function fetchRows() {
+async function fetchRows() {
   // Eng yangi birinchi; katta ziyofat uchun ham yetarli chegara.
-  return sbSelect(
-    "rsvps",
-    "select=name,phone,attending,guests,message,location,created_at&order=created_at.desc&limit=10000"
-  );
+  try {
+    return await sbSelect(
+      "rsvps",
+      "select=name,phone,attending,guests,message,location,created_at&order=created_at.desc&limit=10000"
+    );
+  } catch (e) {
+    // location ustuni yo'q bo'lsa (0003 migratsiya hali ishlamagan) — usiz olamiz,
+    // shunda hisobot baribir ishlaydi (lokatsiya "—" bo'lib ko'rinadi).
+    if (/location/i.test(e.message || "")) {
+      return sbSelect(
+        "rsvps",
+        "select=name,phone,attending,guests,message,created_at&order=created_at.desc&limit=10000"
+      );
+    }
+    throw e;
+  }
 }
 
 function summarize(rows) {
