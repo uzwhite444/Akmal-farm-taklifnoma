@@ -21,12 +21,10 @@ section{position:relative;z-index:2;padding:0 clamp(20px,6vw,32px);}
 
 .hero{text-align:center;padding-top:clamp(44px,12vw,60px);padding-bottom:6px;}
 .hero::before{content:"";position:absolute;top:-30px;left:50%;width:560px;height:400px;margin-left:-280px;background:radial-gradient(ellipse at center,rgba(203,216,236,.5),rgba(203,216,236,0) 68%);z-index:0;pointer-events:none;}
-.hero .biglogo{height:clamp(66px,22vw,90px);width:auto;margin-bottom:8px;}
-.stage3d{position:relative;height:clamp(250px,72vw,340px);margin:0 0 6px;}
-.stage3d .glow{position:absolute;left:50%;top:47%;width:360px;height:360px;margin:-180px 0 0 -180px;
+.stage3d{position:relative;height:auto;min-height:130px;margin:10px 0 24px;display:flex;justify-content:center;align-items:center;perspective:1200px;}
+.stage3d .glow{position:absolute;left:50%;top:50%;width:300px;height:300px;margin:-150px 0 0 -150px;
  border-radius:50%;z-index:0;
  background:radial-gradient(circle,rgba(180,198,224,.55) 0%,rgba(180,198,224,.18) 40%,rgba(180,198,224,0) 70%);}
-.stage3d canvas{position:relative;display:block;width:100%;height:100%;z-index:1;}
 .capfb{position:absolute;left:0;right:0;top:0;bottom:0;margin:auto;max-height:330px;max-width:92%;object-fit:contain;z-index:1;}
 .hero .eye{margin:8px 0 20px;}
 .hero h1{font-weight:800;font-size:clamp(34px,11.5vw,50px);line-height:1.02;letter-spacing:.5px;color:#15315a;}
@@ -109,185 +107,108 @@ section{position:relative;z-index:2;padding:0 clamp(20px,6vw,32px);}
   .mapbtn{transition:none;}
 }
 
-/* Academy Interactive 3D Astrolabe styling */
-.academy-emblem-container {
-  position: absolute;
-  left: 0; right: 0; top: 0; bottom: 0;
-  margin: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-  perspective: 1200px;
-}
-
-/* Concentric Astrolabe Orbital Rings */
-.astrolabe-ring {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.astrolabe-outer {
-  width: min(290px, 68vw);
-  height: min(290px, 68vw);
-  border: 1px dashed rgba(196, 29, 48, 0.45);
-  animation: orbitClockwise 28s linear infinite;
-  box-shadow: inset 0 0 15px rgba(196, 29, 48, 0.05);
-}
-
-.astrolabe-outer::before {
-  content: "";
-  position: absolute;
-  top: -4px;
-  left: 50%;
-  width: 8px;
-  height: 8px;
-  background: #c41d30;
-  border-radius: 50%;
-  box-shadow: 0 0 12px #c41d30, 0 0 20px rgba(196, 29, 48, 0.6);
-}
-
-.astrolabe-middle {
-  width: min(250px, 58vw);
-  height: min(250px, 58vw);
-  border: 1px dotted rgba(21, 49, 90, 0.45);
-  animation: orbitCounter 20s linear infinite;
-}
-
-.astrolabe-middle::after {
-  content: "";
-  position: absolute;
-  bottom: -3px;
-  right: 35%;
-  width: 6px;
-  height: 6px;
-  background: #15315a;
-  border-radius: 50%;
-  box-shadow: 0 0 10px rgba(21, 49, 90, 0.5);
-}
-
-.astrolabe-inner {
-  width: min(210px, 48vw);
-  height: min(210px, 48vw);
-  border: 1.5px solid rgba(21, 49, 90, 0.12);
-  border-left-color: rgba(196, 29, 48, 0.3);
-  animation: orbitClockwise 15s linear infinite;
-}
-
-/* 3D Glassmorphic Bezel Medal */
-.academy-card-3d {
+/* New main logo styles */
+.main-logo-wrapper {
   position: relative;
-  width: min(185px, 42vw);
-  height: min(185px, 42vw);
-  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.94) 0%, rgba(248, 250, 253, 0.9) 70%, rgba(240, 244, 248, 0.86) 100%);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: 50%;
-  border: 3px double #15315a;
-  box-shadow: 
-    0 20px 45px rgba(21, 49, 90, 0.18),
-    0 5px 15px rgba(196, 29, 48, 0.05),
-    inset 0 3px 6px rgba(255, 255, 255, 0.95),
-    inset 0 -3px 6px rgba(21, 49, 90, 0.04);
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: clamp(10px, 2.8vw, 16px);
+  background: #fbf8f3;
+  border: 1px solid rgba(21, 49, 90, 0.08);
+  border-radius: 20px;
+  padding: clamp(8px, 2.5vw, 12px) clamp(14px, 4vw, 22px);
+  box-shadow: 
+    0 20px 45px rgba(21, 49, 90, 0.12),
+    0 5px 15px rgba(196, 29, 48, 0.03),
+    inset 0 3px 6px rgba(255, 255, 255, 0.95);
   transform-style: preserve-3d;
   transition: transform 0.1s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease;
   cursor: pointer;
   will-change: transform;
 }
-
-.academy-card-3d::after {
-  content: "";
-  position: absolute;
-  top: 4px; left: 4px; right: 4px; bottom: 4px;
-  border: 1px dashed rgba(196, 29, 48, 0.35);
-  border-radius: 50%;
-  pointer-events: none;
+.main-logo-wrapper:hover {
+  box-shadow: 
+    0 24px 50px rgba(21, 49, 90, 0.16),
+    0 8px 20px rgba(196, 29, 48, 0.05),
+    inset 0 3px 6px rgba(255, 255, 255, 0.95);
 }
-
-.academy-card-inner {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  transform: translateZ(28px);
-  padding: 12px;
-  pointer-events: none;
-}
-
-.academy-logo-img {
-  width: 72%;
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 6px 12px rgba(21, 49, 90, 0.12));
-  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.academy-badge {
-  font-family: 'Mont', sans-serif;
-  font-weight: 900;
-  font-size: clamp(8px, 2.4vw, 11px);
-  letter-spacing: 4px;
-  color: #c41d30;
-  margin-top: 10px;
-  text-indent: 4px;
-  background: rgba(196, 29, 48, 0.06);
-  padding: 3px 12px 2px;
-  border-radius: 20px;
-  border: 1px solid rgba(196, 29, 48, 0.15);
-  box-shadow: inset 0 1px 2px rgba(255,255,255,0.8);
-}
-
-/* Dynamic Glass Lens Glare overlay */
 .academy-card-glare {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
-  border-radius: 50%;
+  border-radius: 20px;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 55%, rgba(0, 0, 0, 0.04) 100%);
   pointer-events: none;
   z-index: 3;
   transition: background 0.1s ease;
 }
-
-/* Orbit rotations */
-@keyframes orbitClockwise {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.main-logo-icon {
+  width: clamp(46px, 12.5vw, 62px);
+  height: clamp(46px, 12.5vw, 62px);
+  flex-shrink: 0;
+  transform: translateZ(15px);
+  filter: drop-shadow(0 4px 8px rgba(21, 49, 90, 0.06));
 }
-
-@keyframes orbitCounter {
-  from { transform: rotate(360deg); }
-  to { transform: rotate(0deg); }
+.brand-stacked-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 0.92;
+  transform: translateZ(20px);
+}
+.brand-line {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: 800;
+  font-size: clamp(14px, 3.8vw, 19px);
+  color: #15315a;
+  letter-spacing: -0.2px;
+}
+.brand-divider {
+  width: clamp(2px, 0.6vw, 2.5px);
+  height: clamp(32px, 8.5vw, 42px);
+  background: #c41d30;
+  transform: translateZ(18px);
+  border-radius: 1px;
+}
+.brand-academy-text {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: 800;
+  font-size: clamp(22px, 6vw, 32px);
+  color: #15315a;
+  letter-spacing: -0.5px;
+  transform: translateZ(25px);
+  line-height: 1;
 }
 </style></head>
 <body>
 <div class="wrap">
   <svg class="bgring" viewBox="0 0 400 400"><circle cx="200" cy="200" r="190" fill="none" stroke="#15315a" stroke-width="2"/><circle cx="200" cy="200" r="150" fill="none" stroke="#15315a" stroke-width="2"/><circle cx="200" cy="200" r="150" fill="none" stroke="#c41d30" stroke-width="2" stroke-dasharray="120 600" stroke-dashoffset="40"/><circle cx="200" cy="200" r="108" fill="none" stroke="#15315a" stroke-width="2"/></svg>
   <section class="hero">
-    <img class="biglogo reveal" src="assets/akmal-logo.png" alt="Akmal Farm">
-    <div class="stage3d reveal"><div class="glow"></div>
-      <div class="academy-emblem-container">
-        <!-- Concentric astrolabe orbital rings -->
-        <div class="astrolabe-ring astrolabe-outer"></div>
-        <div class="astrolabe-ring astrolabe-middle"></div>
-        <div class="astrolabe-ring astrolabe-inner"></div>
+    <div class="stage3d reveal">
+      <div class="glow"></div>
+      <div class="main-logo-wrapper" id="academyCard">
+        <div class="academy-card-glare" id="academyGlare"></div>
         
-        <!-- 3D tilting medal/badge -->
-        <div class="academy-card-3d" id="academyCard">
-          <div class="academy-card-glare" id="academyGlare"></div>
-          <div class="academy-card-inner">
-            <img class="academy-logo-img" src="assets/akmal-logo.png" alt="Akmal Farm Academy">
-            <div class="academy-badge">ACADEMY</div>
-          </div>
+        <!-- Left Side: Circular RM Logo with perfect horizontal-cut rings to match the official design -->
+        <svg class="main-logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- Outer dark blue ring with flat horizontal cuts -->
+          <path d="M 17.2,35 A 41.6,41.6 0 1,1 17.2,65 L 29.6,65 A 30.4,30.4 0 1,0 29.6,35 Z" fill="#15315a" />
+          <!-- Inner red ring with flat horizontal cuts -->
+          <path d="M 30.6,38 A 28.1,28.1 0 1,1 30.6,62 L 40.1,62 A 19.9,19.9 0 1,0 40.1,38 Z" fill="#c41d30" />
+          <!-- RM Text centered precisely within the flat gap -->
+          <text x="21" y="58" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="24" fill="#15315a" text-anchor="middle" letter-spacing="-1.5">RM</text>
+        </svg>
+        
+        <!-- Stacked Brand Name: AKMAL FARM -->
+        <div class="brand-stacked-text">
+          <div class="brand-line">AKMAL</div>
+          <div class="brand-line">FARM</div>
         </div>
+        
+        <!-- Vertical Divider Line (Red) -->
+        <div class="brand-divider"></div>
+        
+        <!-- Right Side: ACADEMY -->
+        <div class="brand-academy-text">ACADEMY</div>
       </div>
     </div>
     <div class="eye reveal">TAKLIFNOMA &nbsp;&middot;&nbsp; ПРИГЛАШЕНИЕ</div>
@@ -295,7 +216,6 @@ section{position:relative;z-index:2;padding:0 clamp(20px,6vw,32px);}
     <div class="h1ru reveal" data-ck="hero.title_ru">AKMAL FARM ACADEMY</div>
     <div class="lead reveal" data-ck="hero.lead_uz">Hurmatli mehmon! Sizni «Akmal Farm Academy»ning yangi Gʻishtxona filiali tantanali ochilish marosimiga taklif etamiz.</div>
     <div class="leadru reveal" data-ck="hero.lead_ru">Уважаемый гость! Приглашаем Вас на торжественное открытие нового филиала «Akmal Farm Academy» (Ғиштхона филиали).</div>
-    <svg class="ecg" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 20 H150 L160 20 L168 6 L178 34 L187 20 L197 13 L205 20 H400" stroke="#c41d30" stroke-width="2.5" fill="none" vector-effect="non-scaling-stroke"/></svg>
   </section>
   <style id="cd-style">
 .countdown{text-align:center;padding-top:10px;padding-bottom:18px;}
