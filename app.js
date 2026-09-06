@@ -62,6 +62,38 @@
   function get(obj, path) {
     return path.split('.').reduce(function (o, k) { return o && typeof o === 'object' ? o[k] : undefined; }, obj);
   }
+  function accentAcademyTitle(el) {
+    var textNodes = [];
+    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    var node;
+    while ((node = walker.nextNode())) textNodes.push(node);
+    textNodes.forEach(function (textNode) {
+      if (!/\bACADEMY\b/i.test(textNode.nodeValue)) return;
+      var fragment = document.createDocumentFragment();
+      textNode.nodeValue.split(/(ACADEMY)/gi).forEach(function (part) {
+        if (/^ACADEMY$/i.test(part)) {
+          var accent = document.createElement('span');
+          accent.className = 'hero-academy';
+          accent.textContent = part;
+          fragment.appendChild(accent);
+        } else {
+          fragment.appendChild(document.createTextNode(part));
+        }
+      });
+      textNode.parentNode.replaceChild(fragment, textNode);
+    });
+  }
+  function renderHeroTitle(el, value) {
+    el.textContent = '';
+    value.split(/(<br\s*\/?>)/gi).forEach(function (part) {
+      if (/^<br\s*\/?>$/i.test(part)) {
+        el.appendChild(document.createElement('br'));
+      } else {
+        el.appendChild(document.createTextNode(part));
+      }
+    });
+    accentAcademyTitle(el);
+  }
   fetch('/api/content', { cache: 'no-store' })
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (res) {
@@ -69,9 +101,12 @@
       if (!data || typeof data !== 'object') return;
 
       document.querySelectorAll('[data-ck]').forEach(function (el) {
-        var val = get(data, el.getAttribute('data-ck'));
+        var key = el.getAttribute('data-ck');
+        var val = get(data, key);
         if (typeof val === 'string' && val) {
-          if (val.includes('<br>') || val.includes('<span') || el.getAttribute('data-ck').includes('title')) {
+          if (/^hero\.title_(uz|ru)$/.test(key)) {
+            renderHeroTitle(el, val);
+          } else if (val.includes('<br>') || val.includes('<span') || key.includes('title')) {
             el.innerHTML = val;
           } else {
             el.textContent = val;

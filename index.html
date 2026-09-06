@@ -102,6 +102,7 @@ section{position:relative;z-index:2;padding:0 clamp(20px,6vw,32px);}
 .mapbtn:active{transform:translateY(0) scale(.985);}
 @media (prefers-reduced-motion:reduce){
   .hero .reveal,.ecg path,.capfb{animation:none;}
+  .main-logo-wrapper,.academy-logo-art,.main-logo-wrapper::after{animation:none !important;}
   .ecg path{stroke-dashoffset:0;}
   .js-scroll .reveal-up{transition:none;opacity:1;transform:none;}
   .mapbtn{transition:none;}
@@ -125,6 +126,7 @@ section{position:relative;z-index:2;padding:0 clamp(20px,6vw,32px);}
   transition: transform 0.1s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease;
   cursor: pointer;
   will-change: transform;
+  animation: academyLogoReveal .95s cubic-bezier(.22,1,.36,1) .08s both;
 }
 .main-logo-wrapper:hover {
   box-shadow: 
@@ -140,6 +142,37 @@ section{position:relative;z-index:2;padding:0 clamp(20px,6vw,32px);}
   pointer-events: none;
   z-index: 3;
   transition: background 0.1s ease;
+}
+.academy-logo-art {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: clamp(220px, 62vw, 330px);
+  height: auto;
+  filter: drop-shadow(0 7px 12px rgba(21, 49, 90, 0.16));
+  animation: academyLogoFloat 5.5s ease-in-out 1s infinite;
+}
+@keyframes academyLogoReveal {
+  from { opacity: 0; transform: translateY(20px) scale(.94); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes academyLogoFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.main-logo-wrapper::after {
+  content: '';
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  border-radius: 20px;
+  background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.7) 48%, transparent 66%);
+  transform: translateX(-120%);
+  pointer-events: none;
+  animation: academyLogoSweep 1.4s ease 1.05s both;
+}
+@keyframes academyLogoSweep {
+  to { transform: translateX(120%); }
 }
 .main-logo-icon {
   width: clamp(46px, 12.5vw, 62px);
@@ -178,9 +211,7 @@ section{position:relative;z-index:2;padding:0 clamp(20px,6vw,32px);}
   transform: translateZ(25px);
   line-height: 1;
 }
- .academyy{
-  color="#c41d30"
- }
+.hero-academy{color:#c41d30;}
 </style></head>
 <body>
 <div class="wrap">
@@ -190,32 +221,11 @@ section{position:relative;z-index:2;padding:0 clamp(20px,6vw,32px);}
       <div class="glow"></div>
       <div class="main-logo-wrapper" id="academyCard">
         <div class="academy-card-glare" id="academyGlare"></div>
-        
-        <!-- Left Side: Circular RM Logo with perfect horizontal-cut rings to match the official design -->
-        <svg class="main-logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <!-- Outer dark blue ring with flat horizontal cuts -->
-          <path d="M 17.2,35 A 41.6,41.6 0 1,1 17.2,65 L 29.6,65 A 30.4,30.4 0 1,0 29.6,35 Z" fill="#15315a" />
-          <!-- Inner red ring with flat horizontal cuts -->
-          <path d="M 30.6,38 A 28.1,28.1 0 1,1 30.6,62 L 40.1,62 A 19.9,19.9 0 1,0 40.1,38 Z" fill="#c41d30" />
-          <!-- RM Text centered precisely within the flat gap -->
-          <text x="21" y="58" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="24" fill="#15315a" text-anchor="middle" letter-spacing="-1.5">RM</text>
-        </svg>
-        
-        <!-- Stacked Brand Name: AKMAL FARM -->
-        <div class="brand-stacked-text">
-          <div class="brand-line">AKMAL</div>
-          <div class="brand-line">FARM</div>
-        </div>
-        
-        <!-- Vertical Divider Line (Red) -->
-        <div class="brand-divider"></div>
-        
-        <!-- Right Side: ACADEMY -->
-        <div class="brand-academy-text">ACADEMY</div>
+        <img class="academy-logo-art" src="assets/ACADEMY.svg" alt="Akmal Farm Academy">
       </div>
     </div>
     <div class="eye reveal">TAKLIFNOMA &nbsp;&middot;&nbsp; ПРИГЛАШЕНИЕ</div>
-    <h1 class="reveal" data-ck="hero.title_uz">AKMAL FARM<br class="academyy">ACADEMY</h1>
+    <h1 class="reveal" data-ck="hero.title_uz">AKMAL FARM<br class="academyy"><span class="hero-academy">ACADEMY</span></h1>
     <div class="h1ru reveal" data-ck="hero.title_ru">AKMAL FARM ACADEMY</div>
     <div class="lead reveal" data-ck="hero.lead_uz">Hurmatli mehmon! Sizni «Akmal Farm Academy»ning yangi Gʻishtxona filiali tantanali ochilish marosimiga taklif etamiz.</div>
     <div class="leadru reveal" data-ck="hero.lead_ru">Уважаемый гость! Приглашаем Вас на торжественное открытие нового филиала «Akmal Farm Academy» (Ғиштхона филиали).</div>
