@@ -3,5 +3,8 @@
   "buildCommand": "",
   "installCommand": "",
   "outputDirectory": ".",
-  "cleanUrls": true
+  "cleanUrls": true,
+  "crons": [
+    { "path": "/api/keepalive", "schedule": "0 4 * * *" }
+  ]
 }
