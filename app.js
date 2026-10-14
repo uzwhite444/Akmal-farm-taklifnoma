@@ -62,38 +62,6 @@
   function get(obj, path) {
     return path.split('.').reduce(function (o, k) { return o && typeof o === 'object' ? o[k] : undefined; }, obj);
   }
-  function accentAcademyTitle(el) {
-    var textNodes = [];
-    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-    var node;
-    while ((node = walker.nextNode())) textNodes.push(node);
-    textNodes.forEach(function (textNode) {
-      if (!/\bACADEMY\b/i.test(textNode.nodeValue)) return;
-      var fragment = document.createDocumentFragment();
-      textNode.nodeValue.split(/(ACADEMY)/gi).forEach(function (part) {
-        if (/^ACADEMY$/i.test(part)) {
-          var accent = document.createElement('span');
-          accent.className = 'hero-academy';
-          accent.textContent = part;
-          fragment.appendChild(accent);
-        } else {
-          fragment.appendChild(document.createTextNode(part));
-        }
-      });
-      textNode.parentNode.replaceChild(fragment, textNode);
-    });
-  }
-  function renderHeroTitle(el, value) {
-    el.textContent = '';
-    value.split(/(<br\s*\/?>)/gi).forEach(function (part) {
-      if (/^<br\s*\/?>$/i.test(part)) {
-        el.appendChild(document.createElement('br'));
-      } else {
-        el.appendChild(document.createTextNode(part));
-      }
-    });
-    accentAcademyTitle(el);
-  }
   fetch('/api/content', { cache: 'no-store' })
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (res) {
@@ -101,17 +69,8 @@
       if (!data || typeof data !== 'object') return;
 
       document.querySelectorAll('[data-ck]').forEach(function (el) {
-        var key = el.getAttribute('data-ck');
-        var val = get(data, key);
-        if (typeof val === 'string' && val) {
-          if (/^hero\.title_(uz|ru)$/.test(key)) {
-            renderHeroTitle(el, val);
-          } else if (val.includes('<br>') || val.includes('<span') || key.includes('title')) {
-            el.innerHTML = val;
-          } else {
-            el.textContent = val;
-          }
-        }
+        var val = get(data, el.getAttribute('data-ck'));
+        if (typeof val === 'string' && val) el.textContent = val;
       });
 
       var mapUrl = get(data, 'event.map_url');
@@ -230,61 +189,4 @@
       else setStatus('err', 'Xatolik. Qayta urinib koʼring · Ошибка, попробуйте ещё раз');
     });
   });
-
-  // 3D Parallax & Astrolabe Interaction
-  var stage = document.querySelector('.stage3d');
-  var card = document.getElementById('academyCard');
-  var glare = document.getElementById('academyGlare');
-  
-  if (stage && card) {
-    function setTilt(x, y, w, h) {
-      var xc = w / 2;
-      var yc = h / 2;
-      var dx = x - xc;
-      var dy = y - yc;
-      
-      // Limit tilt angles to maximum of 14 degrees for an elegant reaction
-      var rx = -(dy / yc) * 14;
-      var ry = (dx / xc) * 14;
-      
-      card.style.transform = 'rotateX(' + rx + 'deg) rotateY(' + ry + 'deg)';
-      
-      if (glare) {
-        var gx = (x / w) * 100;
-        var gy = (y / h) * 100;
-        glare.style.background = 'radial-gradient(circle at ' + gx + '% ' + gy + '%, rgba(255,255,255,0.48) 0%, rgba(255,255,255,0) 65%)';
-      }
-    }
-    
-    function resetTilt() {
-      card.style.transform = 'rotateX(0deg) rotateY(0deg)';
-      if (glare) {
-        glare.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 55%, rgba(0, 0, 0, 0.04) 100%)';
-      }
-    }
-    
-    stage.addEventListener('mousemove', function (e) {
-      var rect = stage.getBoundingClientRect();
-      var x = e.clientX - rect.left;
-      var y = e.clientY - rect.top;
-      setTilt(x, y, rect.width, rect.height);
-    });
-    
-    stage.addEventListener('mouseleave', resetTilt);
-    
-    stage.addEventListener('touchmove', function (e) {
-      if (e.touches.length > 0) {
-        var touch = e.touches[0];
-        var rect = stage.getBoundingClientRect();
-        var x = touch.clientX - rect.left;
-        var y = touch.clientY - rect.top;
-        if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
-          e.preventDefault();
-          setTilt(x, y, rect.width, rect.height);
-        }
-      }
-    }, { passive: false });
-    
-    stage.addEventListener('touchend', resetTilt);
-  }
 })();
